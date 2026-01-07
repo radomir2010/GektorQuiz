@@ -1,68 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================
+   LoL COLOR SYSTEM
+========================= */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --bg-primary: #0a1420;
+  --bg-secondary: #0f1923;
+  --bg-card: #111c2d;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --gold: #c89b3c;
+  --gold-soft: rgba(200, 155, 60, 0.25);
+  --gold-hover: #f0c674;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --text-primary: #f0e6d2;
+  --text-muted: rgba(240, 230, 210, 0.6);
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  --border-gold: #c89b3c;
+
+  --glow-gold: rgba(200, 155, 60, 0.35);
+  --glow-blue: rgba(26, 58, 95, 0.6);
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* =========================
+   GLOBAL BASE
+========================= */
+@layer base {
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Ubuntu, sans-serif;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+/* =========================
+   BACKGROUND
+========================= */
+.lol-bg {
+  background: linear-gradient(
+      to bottom,
+      rgba(10, 20, 32, 0.96),
+      rgba(15, 25, 40, 0.98)
+    ),
+    url("/background.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+/* =========================
+   TITLES / TEXT
+========================= */
+.lol-title {
+  font-family: "Cinzel", "Beaufort for LOL", serif;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-shadow: 0 0 12px var(--glow-gold), 0 0 24px rgba(200, 155, 60, 0.25);
+}
+
+.lol-question {
+  font-family: "Cinzel", "Beaufort for LOL", serif;
+  letter-spacing: 0.5px;
+}
+
+/* =========================
+   BADGE (QUESTION COUNTER)
+========================= */
+.lol-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--border-gold);
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 25, 40, 0.9),
+    rgba(10, 20, 32, 0.95)
+  );
+  box-shadow: inset 0 0 12px rgba(200, 155, 60, 0.1);
+}
+
+/* =========================
+   CARD / FRAME
+========================= */
+.lol-card {
+  position: relative;
+  background: linear-gradient(
+    to bottom,
+    rgba(17, 28, 45, 0.95),
+    rgba(10, 20, 32, 0.98)
+  );
+  border: 1px solid var(--border-gold);
+  box-shadow: 0 0 14px var(--glow-blue), inset 0 0 18px rgba(200, 155, 60, 0.08);
+}
+
+/* декоративное внутреннее свечение */
+.lol-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 24px rgba(26, 58, 95, 0.4);
+}
+
+/* =========================
+   ANSWER BUTTONS (LoL CHOICE)
+========================= */
+.lol-button {
+  position: relative;
+  background: linear-gradient(to bottom, #121f33, #0f1923);
+  border: 1px solid #1e3a5f;
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+/* золотая подсветка слева */
+.lol-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at left,
+    var(--gold-soft),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* нажатие (под палец) */
+.lol-button:active {
+  border-color: var(--border-gold);
+}
+
+.lol-button:active::before {
+  opacity: 1;
+}
+
+/* =========================
+   IMAGE SLOT
+========================= */
+.lol-image {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 20, 32, 0.9),
+    rgba(15, 25, 40, 0.95)
+  );
+}
+
+.lol-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 30px rgba(26, 58, 95, 0.6);
 }
