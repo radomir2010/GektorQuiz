@@ -1,5 +1,7 @@
+// components/Result.jsx
 export default function Result({ total, correct, telegramUserId, onRestart }) {
-  const percent = Math.round((correct / total) * 100);
+  const safeTotal = Math.max(1, total); // чтобы не делить на 0
+  const percent = Math.round((correct / safeTotal) * 100);
 
   return (
     <div className="min-h-screen lol-bg flex justify-center px-4 py-6">

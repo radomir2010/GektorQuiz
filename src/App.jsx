@@ -1,112 +1,80 @@
+import { useMemo, useState } from "react";
 import Quiz from "./components/Quiz.jsx";
 import Result from "./components/Result.jsx";
-import { useState } from "react";
-const IMAGE =
-  "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data/2984fc54c2eccfed432ac8a78e90757b574178c4-418x473.jpg?accountingTag=LoL?auto=format&fit=fill&q=80&w=352";
-
-const questions = [
-  {
-    id: 1,
-    question: "Кто из чемпионов обладает ультимейтом «Requiem»?",
-    options: ["Karthus", "Lux", "Ezreal", "Morgana"],
-    correctIndex: 0, // Karthus
-    image: IMAGE,
-  },
-  {
-    id: 2,
-    question: "Какой чемпион способен телепортироваться к союзникам с ультой?",
-    options: ["Shen", "Galio", "Twisted Fate", "Pantheon"],
-    correctIndex: 0, // Shen
-    image: IMAGE,
-  },
-  {
-    id: 3,
-    question: "Кто является тёмным жнецом с косой?",
-    options: ["Kayn", "Thresh", "Mordekaiser", "Viego"],
-    correctIndex: 1, // Thresh
-    image: IMAGE,
-  },
-  {
-    id: 4,
-    question: "Какой чемпион может становиться неуязвимым с помощью «Zhonya»?",
-    options: ["Любой", "Только маги", "Только ассасины", "Только танки"],
-    correctIndex: 0, // Любой
-    image: IMAGE,
-  },
-  {
-    id: 5,
-    question: "Кто использует ярость вместо маны?",
-    options: ["Tryndamere", "Garen", "Renekton", "Все перечисленные"],
-    correctIndex: 3, // Все перечисленные
-    image: IMAGE,
-  },
-  {
-    id: 6,
-    question: "Какой чемпион управляет временем?",
-    options: ["Zilean", "Ekko", "Bard", "Ryze"],
-    correctIndex: 0, // Zilean
-    image: IMAGE,
-  },
-  {
-    id: 7,
-    question: "Кто из чемпионов является демоном?",
-    options: ["Evelynn", "Ahri", "Elise", "Nilah"],
-    correctIndex: 0, // Evelynn
-    image: IMAGE,
-  },
-  {
-    id: 8,
-    question: "Какой чемпион может воровать ультимейты?",
-    options: ["Sylas", "Viego", "Neeko", "LeBlanc"],
-    correctIndex: 0, // Sylas
-    image: IMAGE,
-  },
-  {
-    id: 9,
-    question: "Кто считается самым мобильным ассасином?",
-    options: ["Zed", "Katarina", "Akali", "Talon"],
-    correctIndex: 2, // Akali (да, спорно, но общепринято)
-    image: IMAGE,
-  },
-  {
-    id: 10,
-    question: "Какой чемпион известен фразой «OK»?",
-    options: ["Rammus", "Amumu", "Malphite", "Nasus"],
-    correctIndex: 0, // Rammus
-    image: IMAGE,
-  },
-];
+import Welcome from "./components/Welcome.jsx";
+import { getQuestionById } from "./data/questions.js";
 
 export default function App() {
-  const telegramUserId = 123456789; // ← TG WebApp отдаст сюда
+  const telegramUserId = 123456789; // потом подставишь из TG WebApp
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [currentId, setCurrentId] = useState("q1_planet");
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
 
+  const q = getQuestionById(currentId);
+
+  // Считаем только вопросы со знанием (где есть correctIndex = number)
+  // Тут это: q1_planet + один из веточных (q_tank/q_support/q_mage/q_phys) = 2
+  const totalScored = 2;
+
+  const step = useMemo(() => {
+    // Для UI-шагов показываем 3 этапа:
+    // 1) планета, 2) выбор роли, 3) веточный вопрос
+    if (currentId === "q1_planet") return 1;
+    if (currentId === "q2_role") return 2;
+    return 3;
+  }, [currentId]);
+
+  const totalSteps = 3;
+
+  function handleStart() {
+    setStarted(true);
+  }
+
   function handleAnswer(selectedIndex) {
-    if (selectedIndex === questions[currentIndex].correctIndex) {
-      setCorrectCount((c) => c + 1);
+    if (!q) return;
+
+    // 1) Если это обычный вопрос — проверяем правильность
+    if (typeof q.correctIndex === "number") {
+      if (selectedIndex === q.correctIndex) {
+        setCorrectCount((c) => c + 1);
+      }
     }
 
-    const next = currentIndex + 1;
-    if (next < questions.length) {
-      setCurrentIndex(next);
+    // 2) Определяем следующий вопрос
+    let nextId = null;
+
+    // ветвление
+    if (q.id === "q2_role") {
+      nextId = q.nextByAnswer?.[selectedIndex] ?? null;
     } else {
+      nextId = q.nextId ?? null;
+    }
+
+    // 3) Конец или переход
+    if (!nextId) {
       setFinished(true);
+    } else {
+      setCurrentId(nextId);
     }
   }
 
   function restartQuiz() {
-    setCurrentIndex(0);
+    setStarted(false);
+    setCurrentId("q1_planet");
     setCorrectCount(0);
     setFinished(false);
+  }
+
+  if (!started) {
+    return <Welcome onStart={handleStart} />;
   }
 
   if (finished) {
     return (
       <Result
-        total={questions.length}
+        total={totalScored}
         correct={correctCount}
         telegramUserId={telegramUserId}
         onRestart={restartQuiz}
@@ -114,15 +82,13 @@ export default function App() {
     );
   }
 
-  const q = questions[currentIndex];
-
   return (
     <Quiz
-      current={currentIndex + 1}
-      total={questions.length}
-      question={q.question}
-      options={q.options}
-      image={q.image}
+      current={step}
+      total={totalSteps}
+      question={q?.question ?? ""}
+      options={q?.options ?? []}
+      image={q?.image}
       onAnswer={handleAnswer}
     />
   );
